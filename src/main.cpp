@@ -9,7 +9,7 @@
 int main(int argc, char *argv[])
 {
 	// create qt application
-    QCoreApplication a(argc, argv);
+	QCoreApplication a(argc, argv);
 
 	// register ESDSDKTarget, to be used with queued signals and slots
 	qRegisterMetaType<ESDSDKTarget>("ESDSDKTarget");
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	QString info = parser.value(infoOption);
 
 	// create streamdeck proxy
-    StreamDeckProxy proxy(port, registerEvent, pluginUUID, &a);
+	StreamDeckProxy proxy(port, registerEvent, pluginUUID, &a);
 
 	// create plugin instance here
 	StreamDeckPlugin* plugin = nullptr;
@@ -61,5 +61,5 @@ int main(int argc, char *argv[])
 	QObject::connect(plugin, &StreamDeckPlugin::logMessage, &proxy, &StreamDeckProxy::logMessage);
 
 	// execute qt event loop
-    return a.exec();
+	return a.exec();
 }
