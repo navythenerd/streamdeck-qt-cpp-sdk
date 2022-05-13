@@ -1,5 +1,5 @@
 # Elgato StreamDeck Qt C++ SDK
-This SDK/Template can be used to develop StreamDeck plugins using the Qt Framework. I developed the SDK because I didn´t like the sources and examples provided by Elgato.
+This SDK/Template can be used to develop StreamDeck plugins using the Qt Framework. I developed the SDK because I dont´t like the sources and examples provided by Elgato and to have a clean template for programming StreamDeck Plugins.
 
 ## How to start?
 To develop your own plugin, just clone this repository and create a new class. Your plugin class has to inherit from `StreamDeckPlugin`. In the `main.cpp` look for:
