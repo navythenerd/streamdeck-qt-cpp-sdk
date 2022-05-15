@@ -40,25 +40,7 @@ int main(int argc, char *argv[])
 	StreamDeckPlugin* plugin = nullptr;
 
 	// connect plugin to streamdeck proxy
-	// streamdeck --> plugin
-	QObject::connect(&proxy, &StreamDeckProxy::keyDown, plugin, &StreamDeckPlugin::keyDown);
-	QObject::connect(&proxy, &StreamDeckProxy::keyUp, plugin, &StreamDeckPlugin::keyUp);
-	QObject::connect(&proxy, &StreamDeckProxy::willAppear, plugin, &StreamDeckPlugin::willAppear);
-	QObject::connect(&proxy, &StreamDeckProxy::willDisappear, plugin, &StreamDeckPlugin::willDisappear);
-	QObject::connect(&proxy, &StreamDeckProxy::willDisappear, plugin, &StreamDeckPlugin::willDisappear);
-	QObject::connect(&proxy, &StreamDeckProxy::deviceConnected, plugin, &StreamDeckPlugin::deviceConnected);
-	QObject::connect(&proxy, &StreamDeckProxy::deviceDisconnected, plugin, &StreamDeckPlugin::deviceDisconnected);
-	QObject::connect(&proxy, &StreamDeckProxy::sendToPlugin, plugin, &StreamDeckPlugin::sendToPlugin);
-	// plugin --> streamdeck
-	QObject::connect(plugin, &StreamDeckPlugin::setTitle, &proxy, &StreamDeckProxy::setTitle);
-	QObject::connect(plugin, &StreamDeckPlugin::setImage, &proxy, &StreamDeckProxy::setImage);
-	QObject::connect(plugin, &StreamDeckPlugin::showAlertForContext, &proxy, &StreamDeckProxy::showAlertForContext);
-	QObject::connect(plugin, &StreamDeckPlugin::showOkForContext, &proxy, &StreamDeckProxy::showOkForContext);
-	QObject::connect(plugin, &StreamDeckPlugin::setSettings, &proxy, &StreamDeckProxy::setSettings);
-	QObject::connect(plugin, &StreamDeckPlugin::setState, &proxy, &StreamDeckProxy::setState);
-	QObject::connect(plugin, &StreamDeckPlugin::sendToPropertyInspector, &proxy, &StreamDeckProxy::sendToPropertyInspector);
-	QObject::connect(plugin, &StreamDeckPlugin::switchToProfile, &proxy, &StreamDeckProxy::switchToProfile);
-	QObject::connect(plugin, &StreamDeckPlugin::logMessage, &proxy, &StreamDeckProxy::logMessage);
+	proxy.use(plugin);
 
 	// execute qt event loop
 	return a.exec();

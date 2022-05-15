@@ -17,6 +17,35 @@ StreamDeckProxy::StreamDeckProxy(uint port, const QString& event, const QString&
 	_socket.open(QString::asprintf("ws://127.0.0.1:%d", port));
 }
 
+void StreamDeckProxy::use(StreamDeckPlugin* plugin) 
+{
+	// check if plugin is not null
+	if (plugin == nullptr) 
+	{
+		throw std::runtime_error("plugin must not be null");
+	}
+
+	// streamdeck --> plugin
+	connect(this, &StreamDeckProxy::keyDown, plugin, &StreamDeckPlugin::keyDown);
+	connect(this, &StreamDeckProxy::keyUp, plugin, &StreamDeckPlugin::keyUp);
+	connect(this, &StreamDeckProxy::willAppear, plugin, &StreamDeckPlugin::willAppear);
+	connect(this, &StreamDeckProxy::willDisappear, plugin, &StreamDeckPlugin::willDisappear);
+	connect(this, &StreamDeckProxy::willDisappear, plugin, &StreamDeckPlugin::willDisappear);
+	connect(this, &StreamDeckProxy::deviceConnected, plugin, &StreamDeckPlugin::deviceConnected);
+	connect(this, &StreamDeckProxy::deviceDisconnected, plugin, &StreamDeckPlugin::deviceDisconnected);
+	connect(this, &StreamDeckProxy::sendToPlugin, plugin, &StreamDeckPlugin::sendToPlugin);
+	// plugin --> streamdeck
+	connect(plugin, &StreamDeckPlugin::setTitle, this, &StreamDeckProxy::setTitle);
+	connect(plugin, &StreamDeckPlugin::setImage, this, &StreamDeckProxy::setImage);
+	connect(plugin, &StreamDeckPlugin::showAlertForContext, this, &StreamDeckProxy::showAlertForContext);
+	connect(plugin, &StreamDeckPlugin::showOkForContext, this, &StreamDeckProxy::showOkForContext);
+	connect(plugin, &StreamDeckPlugin::setSettings, this, &StreamDeckProxy::setSettings);
+	connect(plugin, &StreamDeckPlugin::setState, this, &StreamDeckProxy::setState);
+	connect(plugin, &StreamDeckPlugin::sendToPropertyInspector, this, &StreamDeckProxy::sendToPropertyInspector);
+	connect(plugin, &StreamDeckPlugin::switchToProfile, this, &StreamDeckProxy::switchToProfile);
+	connect(plugin, &StreamDeckPlugin::logMessage, this, &StreamDeckProxy::logMessage);
+}
+
 void StreamDeckProxy::textMessageReceived(const QString& message) 
 {
 	// parse message as json

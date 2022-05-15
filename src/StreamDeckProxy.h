@@ -16,6 +16,8 @@ class StreamDeckProxy :
 public:
 	explicit StreamDeckProxy(uint port, const QString& event, const QString& uuid, QObject* parent = nullptr);
 
+	void use(StreamDeckPlugin* plugin);
+
 public slots:
 	void textMessageReceived(const QString& message);
 	void connected();
