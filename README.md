@@ -17,17 +17,32 @@ The `StreamDeckProxy` is used to establish a WebSocket connection to the StreamD
  - keyUp
  - willAppear
  - willDisappear
+ - titleParameterDidChange
  - deviceDidConnect
  - deviceDidDisconnect
+ - applicationDidLaunch
+ - applicationDidTerminate
+ - systemDidWakeUp
+ - propertyInspectorDidAppear
+ - propertyInspectorDidDisappear
+ - didReceiveSettings
+ - didReceiveGlobalSettings
+ - sendToPlugin
 
 Further it provides the following `Qt Slots` to send data back to the StreamDeck:
+ - setSettings
+ - getSettings
+ - setGlobalSettings
+ - getGlobalSettings
+ - openUrl
  - setTitle
  - setImage
- - showAlert
- - showOk
+ - showAlertForContext
+ - showOkForContext
  - setState
- - switchToProfile
  - sendToPropertyInspector
+ - switchToProfile
+ - logMessage
 
 The `StreamDeckPlugin` also provides `Qt Signals` and `Qt Slots` which are connected to the `StreamDeckProxy`. To act on a specific StreamDeck event just implement the corresponding slot in your plugin. If you want to send data back to the StreamDeck just emit the corresponding signal.
 
