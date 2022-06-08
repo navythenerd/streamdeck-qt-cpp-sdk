@@ -46,6 +46,13 @@ Further it provides the following `Qt Slots` to send data back to the StreamDeck
 
 The `StreamDeckPlugin` also provides `Qt Signals` and `Qt Slots` which are connected to the `StreamDeckProxy`. To act on a specific StreamDeck event just implement the corresponding slot in your plugin. If you want to send data back to the StreamDeck just emit the corresponding signal.
 
+## Register `StreamDeckPlugin` with the `StreamDeckProxy`
+
+To register a `StreamDeckPlugin` derived class with `StreamDeckProxy` you can just call the `use` method of the `StreamDeckProxy`:
+
+	void StreamDeckProxy::use(StreamDeckPlugin* plugin) const;
+	
+
 # License
 
 MIT licensed 2022 Cedrik Kaufmann. See the LICENSE file for further details.
