@@ -14,11 +14,13 @@ class StreamDeckProxy :
 	public QObject
 {
 	Q_OBJECT
+	Q_DISABLE_COPY(StreamDeckProxy)
 
 public:
 	explicit StreamDeckProxy(uint port, const QString& event, const QString& uuid, QObject* parent = nullptr);
 
-	void use(StreamDeckPlugin* plugin);
+	void use(StreamDeckPlugin* plugin) const;
+	bool isConnected() const;
 
 public slots:
 	void textMessageReceived(const QString& message);
@@ -56,9 +58,12 @@ signals:
 	void didReceiveGlobalSettings(const QJsonObject& settings);
 	void sendToPlugin(const QString& action, const QString& context, const QJsonObject& payload, const QString& deviceId);
 
+	void connectionStatusChanged(bool connected);
+
 private:
 	QWebSocket _socket;
 	QString _registerEvent;
 	QString _pluginUuid;
+	bool _isConnected;
 };
 

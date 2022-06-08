@@ -7,7 +7,7 @@
 
 
 StreamDeckProxy::StreamDeckProxy(uint port, const QString& event, const QString& uuid, QObject* parent) : 
-	_registerEvent(event), _pluginUuid(uuid), QObject(parent)
+	_registerEvent(event), _pluginUuid(uuid), _isConnected(false), QObject(parent)
 {
 	// connect websocket signals to class slot handlers
 	connect(&_socket, &QWebSocket::textMessageReceived, this, &StreamDeckProxy::textMessageReceived);
@@ -18,7 +18,12 @@ StreamDeckProxy::StreamDeckProxy(uint port, const QString& event, const QString&
 	_socket.open(QString::asprintf("ws://127.0.0.1:%d", port));
 }
 
-void StreamDeckProxy::use(StreamDeckPlugin* plugin) 
+bool StreamDeckProxy::isConnected() const
+{
+	return _isConnected;
+}
+
+void StreamDeckProxy::use(StreamDeckPlugin* plugin) const
 {
 	// check if plugin is not null
 	if (plugin == nullptr) 
@@ -112,9 +117,43 @@ void StreamDeckProxy::textMessageReceived(const QString& message)
 
 	if (ev == kESDSDKEventDidReceiveSettings) {
 		emit didReceiveSettings(payload, context, deviceId);
+		return;
 	}
 
-	logMessage(ev);
+	if (ev == kESDSDKEventDidReceiveGlobalSettings) {
+		emit didReceiveGlobalSettings(payload);
+		return;
+	}
+
+	if (ev == kESDSDKEventApplicationDidLaunch) {
+		emit applicationDidLaunch(payload);
+		return;
+	}
+
+	if (ev == kESDSDKEventApplicationDidTerminate) {
+		emit applicationDidTerminate(payload);
+		return;
+	}
+
+	if (ev == kESDSDKEventSystemDidWakeUp) {
+		emit systemDidWakeUp();
+		return;
+	}
+
+	if (ev == kESDSDKEventTitleParametersDidChange) {
+		emit titleParameterDidChange(action, context, payload, deviceId);
+		return;
+	}
+
+	if (ev == kESDSDKEventPropertyInspectorDidAppear) {
+		emit propertyInspectorDidAppear(context, deviceId);
+		return; 
+	}
+
+	if (ev == kESDSDKEventPropertyInspectorDidDisappear) {
+		emit propertyInspectorDidDisappear(context, deviceId);
+		return;
+	}
 }
 
 void StreamDeckProxy::connected() 
@@ -125,27 +164,69 @@ void StreamDeckProxy::connected()
 	json[kESDSDKRegisterUUID] = _pluginUuid;
 
 	_socket.sendTextMessage(QJsonDocument(json).toJson());
+
+	// change connection status
+	_isConnected = true;
+
+	// notify for connection status change
+	emit connectionStatusChanged(_isConnected);
 }
 
 void StreamDeckProxy::disconnected()
 {
-	// not implemented
+	// change connection status 
+	_isConnected = false;
+
+	// notify for connection status change
+	emit connectionStatusChanged(_isConnected);
 }
 
 void StreamDeckProxy::getSettings(const QString& context)
 {
+	// prepare json object
+	QJsonObject json;
+	json[kESDSDKCommonEvent] = kESDSDKEventGetSettings;
+	json[kESDSDKCommonContext] = context;
+
+	// send json over websocket
+	_socket.sendTextMessage(QJsonDocument(json).toJson());
 }
 
 void StreamDeckProxy::setGlobalSettings(const QJsonObject& settings, const QString& context)
 {
+	// prepare json object
+	QJsonObject json;
+	json[kESDSDKCommonEvent] = kESDSDKEventSetGlobalSettings;
+	json[kESDSDKCommonContext] = context;
+	json[kESDSDKCommonPayload] = settings;
+
+	// send json over websocket
+	_socket.sendTextMessage(QJsonDocument(json).toJson());
 }
 
 void StreamDeckProxy::getGlobalSettings(const QString& context)
 {
+	// prepare json object
+	QJsonObject json;
+	json[kESDSDKCommonEvent] = kESDSDKEventSetGlobalSettings;
+	json[kESDSDKCommonContext] = context;
+
+	// send json over websocket
+	_socket.sendTextMessage(QJsonDocument(json).toJson());
 }
 
 void StreamDeckProxy::openUrl(const QUrl& url)
 {
+	// prepare json object
+	QJsonObject json;
+	json[kESDSDKCommonEvent] = kESDSDKEventOpenURL;
+	
+	QJsonObject payload;
+	payload[kESDSDKPayloadSettings] = url.toString();
+	json[kESDSDKCommonPayload] = payload;
+
+	// send json over websocket
+	_socket.sendTextMessage(QJsonDocument(json).toJson());
 }
 
 void StreamDeckProxy::setTitle(const QString& title, const QString& context, ESDSDKTarget target)

@@ -11,6 +11,7 @@ class StreamDeckPlugin :
 	public QObject
 {
 	Q_OBJECT
+	Q_DISABLE_COPY(StreamDeckPlugin)
 
 public:
 	StreamDeckPlugin(QObject* parent = nullptr) : QObject(parent) {};
