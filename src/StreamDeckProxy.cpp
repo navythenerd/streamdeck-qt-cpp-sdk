@@ -3,6 +3,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <stdexcept>
 
 
 StreamDeckProxy::StreamDeckProxy(uint port, const QString& event, const QString& uuid, QObject* parent) : 
@@ -24,22 +25,33 @@ void StreamDeckProxy::use(StreamDeckPlugin* plugin)
 	{
 		throw std::runtime_error("plugin must not be null");
 	}
-
-	// streamdeck --> plugin
+	
+	// streamdeck proxy --> plugin
 	connect(this, &StreamDeckProxy::keyDown, plugin, &StreamDeckPlugin::keyDown);
 	connect(this, &StreamDeckProxy::keyUp, plugin, &StreamDeckPlugin::keyUp);
 	connect(this, &StreamDeckProxy::willAppear, plugin, &StreamDeckPlugin::willAppear);
 	connect(this, &StreamDeckProxy::willDisappear, plugin, &StreamDeckPlugin::willDisappear);
-	connect(this, &StreamDeckProxy::willDisappear, plugin, &StreamDeckPlugin::willDisappear);
-	connect(this, &StreamDeckProxy::deviceConnected, plugin, &StreamDeckPlugin::deviceConnected);
-	connect(this, &StreamDeckProxy::deviceDisconnected, plugin, &StreamDeckPlugin::deviceDisconnected);
+	connect(this, &StreamDeckProxy::titleParameterDidChange, plugin, &StreamDeckPlugin::titleParameterDidChange);
+	connect(this, &StreamDeckProxy::deviceDidConnect, plugin, &StreamDeckPlugin::deviceDidConnect);
+	connect(this, &StreamDeckProxy::deviceDidDisconnect, plugin, &StreamDeckPlugin::deviceDidDisconnect);
+	connect(this, &StreamDeckProxy::applicationDidLaunch, plugin, &StreamDeckPlugin::applicationDidLaunch);
+	connect(this, &StreamDeckProxy::applicationDidTerminate, plugin, &StreamDeckPlugin::applicationDidTerminate);
+	connect(this, &StreamDeckProxy::systemDidWakeUp, plugin, &StreamDeckPlugin::systemDidWakeUp);
+	connect(this, &StreamDeckProxy::propertyInspectorDidAppear, plugin, &StreamDeckPlugin::propertyInspectorDidAppear);
+	connect(this, &StreamDeckProxy::propertyInspectorDidDisappear, plugin, &StreamDeckPlugin::propertyInspectorDidDisappear);
+	connect(this, &StreamDeckProxy::didReceiveSettings, plugin, &StreamDeckPlugin::didReceiveSettings);
+	connect(this, &StreamDeckProxy::didReceiveGlobalSettings, plugin, &StreamDeckPlugin::didReceiveGlobalSettings);
 	connect(this, &StreamDeckProxy::sendToPlugin, plugin, &StreamDeckPlugin::sendToPlugin);
-	// plugin --> streamdeck
+	// plugin --> streamdeck proxy
+	connect(plugin, &StreamDeckPlugin::setSettings, this, &StreamDeckProxy::setSettings);
+	connect(plugin, &StreamDeckPlugin::getSettings, this, &StreamDeckProxy::getSettings);
+	connect(plugin, &StreamDeckPlugin::setGlobalSettings, this, &StreamDeckProxy::setGlobalSettings);
+	connect(plugin, &StreamDeckPlugin::getGlobalSettings, this, &StreamDeckProxy::getGlobalSettings);
+	connect(plugin, &StreamDeckPlugin::openUrl, this, &StreamDeckProxy::openUrl);
 	connect(plugin, &StreamDeckPlugin::setTitle, this, &StreamDeckProxy::setTitle);
 	connect(plugin, &StreamDeckPlugin::setImage, this, &StreamDeckProxy::setImage);
 	connect(plugin, &StreamDeckPlugin::showAlertForContext, this, &StreamDeckProxy::showAlertForContext);
 	connect(plugin, &StreamDeckPlugin::showOkForContext, this, &StreamDeckProxy::showOkForContext);
-	connect(plugin, &StreamDeckPlugin::setSettings, this, &StreamDeckProxy::setSettings);
 	connect(plugin, &StreamDeckPlugin::setState, this, &StreamDeckProxy::setState);
 	connect(plugin, &StreamDeckPlugin::sendToPropertyInspector, this, &StreamDeckProxy::sendToPropertyInspector);
 	connect(plugin, &StreamDeckPlugin::switchToProfile, this, &StreamDeckProxy::switchToProfile);
@@ -55,48 +67,54 @@ void StreamDeckProxy::textMessageReceived(const QString& message)
 	QJsonObject json = jsonDoc.object();
 		
 	// read all common values
-	QString event = json[kESDSDKCommonEvent].toString();
+	QString ev = json[kESDSDKCommonEvent].toString();
 	QString context = json[kESDSDKCommonContext].toString();
 	QString action = json[kESDSDKCommonAction].toString();
 	QString deviceId = json[kESDSDKCommonDevice].toString();
 	QJsonObject payload = json[kESDSDKCommonPayload].toObject();
 
 	// emit the corresponding signal
-	if (event == kESDSDKEventKeyDown) {
+	if (ev == kESDSDKEventKeyDown) {
 		emit keyDown(action, context, payload, deviceId);
 		return;
 	}
 
-	if (event == kESDSDKEventKeyUp) {
+	if (ev == kESDSDKEventKeyUp) {
 		emit keyUp(action, context, payload, deviceId);
 		return;
 	}
 
-	if (event == kESDSDKEventWillAppear) {
+	if (ev == kESDSDKEventWillAppear) {
 		emit willAppear(action, context, payload, deviceId);
 		return;
 	}
 
-	if (event == kESDSDKEventWillDisappear) {
+	if (ev == kESDSDKEventWillDisappear) {
 		emit willDisappear(action, context, payload, deviceId);
 		return;
 	}
 
-	if (event == kESDSDKEventDeviceDidConnect) {
+	if (ev == kESDSDKEventDeviceDidConnect) {
 		QJsonObject deviceInfo = json[kESDSDKCommonDeviceInfo].toObject();
-		emit deviceConnected(deviceId, deviceInfo);
+		emit deviceDidConnect(deviceId, deviceInfo);
 		return;
 	}
 
-	if (event == kESDSDKEventDeviceDidDisconnect) {
-		emit deviceDisconnected(deviceId);
+	if (ev == kESDSDKEventDeviceDidDisconnect) {
+		emit deviceDidDisconnect(deviceId);
 		return;
 	}
 
-	if (event == kESDSDKEventSendToPlugin) {
+	if (ev == kESDSDKEventSendToPlugin) {
 		emit sendToPlugin(action, context, payload, deviceId);
 		return;
 	}
+
+	if (ev == kESDSDKEventDidReceiveSettings) {
+		emit didReceiveSettings(payload, context, deviceId);
+	}
+
+	logMessage(ev);
 }
 
 void StreamDeckProxy::connected() 
@@ -112,7 +130,22 @@ void StreamDeckProxy::connected()
 void StreamDeckProxy::disconnected()
 {
 	// not implemented
-	// 
+}
+
+void StreamDeckProxy::getSettings(const QString& context)
+{
+}
+
+void StreamDeckProxy::setGlobalSettings(const QJsonObject& settings, const QString& context)
+{
+}
+
+void StreamDeckProxy::getGlobalSettings(const QString& context)
+{
+}
+
+void StreamDeckProxy::openUrl(const QUrl& url)
+{
 }
 
 void StreamDeckProxy::setTitle(const QString& title, const QString& context, ESDSDKTarget target)

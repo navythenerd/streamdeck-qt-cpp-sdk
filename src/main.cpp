@@ -1,6 +1,8 @@
 #include <QtCore/QCoreApplication>
 #include <QCommandLineParser>
 #include <QString>
+#include <QList>
+#include <QUrl>
 
 #include "StreamDeckProxy.h"
 #include "StreamDeckPlugin.h"
@@ -9,10 +11,11 @@
 int main(int argc, char *argv[])
 {
 	// create qt application
-	QCoreApplication a(argc, argv);
+    QCoreApplication a(argc, argv);
 
-	// register ESDSDKTarget, to be used with queued signals and slots
+	// register some types, to be used with queued signals and slots
 	qRegisterMetaType<ESDSDKTarget>("ESDSDKTarget");
+	qRegisterMetaType<QUrl>("QUrl");
 
 	// setup commandline parser
 	QCommandLineParser parser;
@@ -34,14 +37,18 @@ int main(int argc, char *argv[])
 	QString info = parser.value(infoOption);
 
 	// create streamdeck proxy
-	StreamDeckProxy proxy(port, registerEvent, pluginUUID, &a);
+    StreamDeckProxy proxy(port, registerEvent, pluginUUID, &a);
 
 	// create plugin instance here
-	StreamDeckPlugin* plugin = nullptr;
+	StreamDeckProxy* plugin = nullptr;
 
-	// connect plugin to streamdeck proxy
+	// register the plugin with the streamdeck proxy
+	// streamdeck proxy handles connection with streamdeck through websocket connection
+	// the plugin implements the logic and acts upon streamdeck events and sends data back
+	// you could register any amount of plugins with the proxy if code should be split across multiple plugin classes
+	// communication between proxy and plugin uses qt signal/slot mechanism
 	proxy.use(plugin);
-
+	
 	// execute qt event loop
-	return a.exec();
+    return a.exec();
 }
