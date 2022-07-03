@@ -11,7 +11,7 @@
 int main(int argc, char *argv[])
 {
 	// create qt application
-    QCoreApplication a(argc, argv);
+	QCoreApplication a(argc, argv);
 
 	// register some types, to be used with queued signals and slots
 	qRegisterMetaType<ESDSDKTarget>("ESDSDKTarget");
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	QString info = parser.value(infoOption);
 
 	// create streamdeck proxy
-    StreamDeckProxy proxy(port, registerEvent, pluginUUID, &a);
+	StreamDeckProxy proxy(port, registerEvent, pluginUUID, &a);
 
 	// create plugin instance here
 	StreamDeckProxy* plugin = nullptr;
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 	// you could register any amount of plugins with the proxy if code should be split across multiple plugin classes
 	// communication between proxy and plugin uses qt signal/slot mechanism
 	proxy.use(plugin);
-	
+
 	// execute qt event loop
-    return a.exec();
+	return a.exec();
 }
