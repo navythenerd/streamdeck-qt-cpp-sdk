@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     StreamDeckProxy proxy(port, registerEvent, pluginUUID, &a);
 
 	// create plugin instance here
-	StreamDeckProxy* plugin = nullptr;
+	StreamDeckPlugin* plugin = nullptr;
 
 	// register the plugin with the streamdeck proxy
 	// streamdeck proxy handles connection with streamdeck through websocket connection
