@@ -51,8 +51,3 @@ The `StreamDeckPlugin` also provides `Qt Signals` and `Qt Slots` which are conne
 To register a `StreamDeckPlugin` derived class with `StreamDeckProxy` you can just call the `use` method of the `StreamDeckProxy`:
 
 	void StreamDeckProxy::use(StreamDeckPlugin* plugin) const;
-	
-
-# License
-
-MIT licensed 2022 Cedrik Kaufmann. See the LICENSE file for further details.
